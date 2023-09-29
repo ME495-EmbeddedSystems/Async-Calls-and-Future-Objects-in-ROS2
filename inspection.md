@@ -28,38 +28,97 @@ If the nodes launched from the `launchfile` are not running, you will get incorr
 5. Use the ROS command `ros2 node list` to list all the nodes that are running.
    The output of the command looks like
    ```
-   ${list nodes here}
+   /mover
+   /roving_turtle
+   /rqt_gui_py_node_7584
    ```
-6. Use the ROS command `${command and args}` to list the topics
+6. Use the ROS command `ros2 topic list` to list the topics
    The output of the command looks like
    ```
-   ${list topics here}
+   /parameter_events
+   /rosout
+   /turtle1/cmd_vel
+   /turtle1/color_sensor
+   /turtle1/pose
    ```
 
-7. Use the ROS command `${command and args}` to verify that the frequency of
-   the `/turtle1/cmd_vel` topic is `${frequency} Hz`
+7. Use the ROS command `ros2 topic hz /turtle1/cmd_vel` to verify that the frequency of
+   the `/turtle1/cmd_vel` topic is `ros2 topic hz /turtle1/cmd_vel Hz`
 
-8. Use the ROS command `${command and args}` to list the services.
+8. Use the ROS command `ros2 service list` to list the services.
    The output of the command looks like
    ```
-   ${list services here}
+   /clear
+   /kill
+   /mover/describe_parameters
+   /mover/get_parameter_types
+   /mover/get_parameters
+   /mover/get_type_description
+   /mover/list_parameters
+   /mover/set_parameters
+   /mover/set_parameters_atomically
+   /reset
+   /roving_turtle/describe_parameters
+   /roving_turtle/get_parameter_types
+   /roving_turtle/get_parameters
+   /roving_turtle/get_type_description
+   /roving_turtle/list_parameters
+   /roving_turtle/set_parameters
+   /roving_turtle/set_parameters_atomically
+   /rqt_gui_py_node_7584/describe_parameters
+   /rqt_gui_py_node_7584/get_parameter_types
+   /rqt_gui_py_node_7584/get_parameters
+   /rqt_gui_py_node_7584/get_type_description
+   /rqt_gui_py_node_7584/list_parameters
+   /rqt_gui_py_node_7584/set_parameters
+   /rqt_gui_py_node_7584/set_parameters_atomically
+   /spawn
+   /switch
+   /turtle1/set_pen
+   /turtle1/teleport_absolute
+   /turtle1/teleport_relative
    ```
 
-9. Use the ROS command `${command and args}` to determine the type of the `/switch` service, which is `${service type}`.
+9. Use the ROS command `ros2 service type /switch` to determine the type of the `/switch` service, which is `crazy_turtle_interfaces/srv/Switch`.
 
-10. Use the ROS command `${command and args}` to list the parameters of all running nodes
+10. Use the ROS command `ros2 param list` to list the parameters of all running nodes
     ```
-    ${list parameters here}
+    /mover:
+      start_type_description_service
+      use_sim_time
+      velocity
+   /roving_turtle:
+      background_b
+      background_g
+      background_r
+      holonomic
+      qos_overrides./parameter_events.publisher.depth
+      qos_overrides./parameter_events.publisher.durability
+      qos_overrides./parameter_events.publisher.history
+      qos_overrides./parameter_events.publisher.reliability
+      start_type_description_service
+      use_sim_time
     ```
 
-11. Use the ROS command `${command and args}` to get information about the `/mover` `velocity` parameter, including its type, description, and constraints
+11. Use the ROS command `ros2 param describe /mover velocity` to get information about the `/mover` `velocity` parameter, including its type, description, and constraints
     ```
-    ${full output of the command here}
+   Parameter name: velocity
+   Type: double
+   Description: The velocity of the turtle
+   Constraints:
     ```
 
-12. Use the ROS command `${command and args}` to retrieve a template/prototype for entering parameters for the `/switch` service on the command line.
+12. Use the ROS command `ros2 interface show crazy_turtle_interfaces/srv/Switch` to retrieve a template/prototype for entering parameters for the `/switch` service on the command line.
     ```
-    ${full output of the command here}
+   turtlesim/Pose mixer # use a strange formula to set the new location of the turtle
+	   float32 x
+	   float32 y
+	   float32 theta
+	   float32 linear_velocity
+	   float32 angular_velocity
+   ---
+   float64 x # the new x position of the new turtle
+   float64 y # the new y position of the new
     ```
 
 ## Package Exploration
