@@ -122,15 +122,15 @@ If the nodes launched from the `launchfile` are not running, you will get incorr
     ```
 
 ## Package Exploration
-1. Use the ROS command `${command and args}` to list the interface types defined by `crazy_turtle_interfaces`
+1. Use the ROS command `ros2 interface package crazy_turtle_interfaces` to list the interface types defined by `crazy_turtle_interfaces`
    The output of the command looks like
    ```
-   ${list service types here}
+   crazy_turtle_interfaces/srv/Switch
    ```
-2. Use the ROS command `${command and args}` to list the executables included with the `crazy_turtle` package
+2. Use the ROS command `ros2 pkg executables crazy_turtle` to list the executables included with the `crazy_turtle` package
    The output of the command looks like
    ```
-   ${list executables here}
+   crazy_turtle mover
    ```
 
 ## Live Interaction
