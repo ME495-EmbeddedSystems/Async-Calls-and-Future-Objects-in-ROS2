@@ -134,16 +134,20 @@ If the nodes launched from the `launchfile` are not running, you will get incorr
    ```
 
 ## Live Interaction
-1. Use the command `${command and args here}` to retrieve the value of the `/mover velocity` parameter, which is `${value here}`.
+1. Use the command `ros2 param get /mover velocity` to retrieve the value of the `/mover velocity` parameter, which is `4.5`.
 2. The ROS command to call the `/switch` service, and it's output is listed below:
     ```
-    ${enter the command and its output here. Call with x=1.0, y=2.0, theta=0.0, angular_velocity=3.0, linear_velocity=4.0}
+    ros2 service call /switch crazy_turtle_interfaces/srv/Switch "{mixer: {x: 1.0, y: 2.0, theta: 0.0, angular_velocity: 3.0, linear_velocity: 4.0}}"
+    requester: making request: crazy_turtle_interfaces.srv.Switch_Request(mixer=turtlesim.msg.Pose(x=1.0, y=2.0, theta=0.0, linear_velocity=4.0, angular_velocity=3.0))
+    
+    response:
+    crazy_turtle_interfaces.srv.Switch_Response(x=5.0, y=4.0)
     ```
 3. The `switch` service performs the following actions (in sequence):
-    1. It `${what does it do? kills | spawns | resets}` the current turtle
-    2. It then respawns a new turtle at `${location as a function of the `/switch` service parameters}`
-4. What happens to the turtle's motion if you use `${command and args here}` to change `/mover velocity` to 10? `${faster | slower | same}`
-5. Use the Linux command `${command and args}` to kill the `/mover` node.
-6. Use the ROS command `${command and args}` to start the `/mover` node with a velocity of 10. 
+    1. It `kills` the current turtle
+    2. It then respawns a new turtle at `(y + angular_velocity, x + linear_velocity)`
+4. What happens to the turtle's motion if you use `ros2 param set /mover velocity 10.0` to change `/mover velocity` to 10? `same`
+5. Use the Linux command `kill $(ps ax | grep /mover | grep ros | awk '{print $1}')` to kill the `/mover` node.
+6. Use the ROS command `ros2 run crazy_turtle mover --ros-args -p velocity:=10.0 -r /cmd_vel:=/turtle1/cmd_vel` to start the `/mover` node with a velocity of 10. 
     - Be sure to remap `cmd_vel` to `/turtle1/cmd_vel`.
-7. What happened to the turtle's velocity after relaunching `mover`? `${faster | slower | same}`
+7. What happened to the turtle's velocity after relaunching `mover`? `faster`
