@@ -1,0 +1,8 @@
+<launch>
+    <arg name="log_level" default="debug" />
+    <arg name="frequency" default="100.0" />
+    <node pkg="turtle_control" exec="waypoint" name="waypoint">
+        <param name="log_level" value="$(var log_level)" />
+        <param name="frequency" value="$(var frequency)" />
+    </node>
+</launch>
