@@ -4,6 +4,7 @@ from rcl_interfaces.msg import ParameterDescriptor
 from enum import Enum, auto
 from std_srvs.srv import Empty
 from turtle_interfaces.srv import Waypoints
+from turtle_interfaces.msg import ErrorMetric
 from geometry_msgs.msg import Twist, Vector3
 from math import pi
 from random import uniform
@@ -35,6 +36,10 @@ def turtle_twist(xdot, omega):
     return Twist(linear = Vector3(x = xdot, y = 0.0, z = 0.0),
                   angular = Vector3(x = 0.0, y = 0.0, z = omega))
 
+def loop_info(complete_loops, actual_distance, error):
+
+    return ErrorMetric(complete_loops=complete_loops, actual_distance=actual_distance, error=error)
+
 class Waypoint(Node):
 
     def __init__(self):
@@ -60,8 +65,8 @@ class Waypoint(Node):
         self.following = 0
         self.velocity = 10.0
         self.ang_vel = 0.0
-        self.fctr = 0
-        self.dtol = 0.2
+        self.fctr = 1
+        self.dtol = 0.05
         self.angtol = 0.01
 
         self.waypoints = np.zeros([2,100])
@@ -70,11 +75,19 @@ class Waypoint(Node):
         self.nsteps = 0
 
         self.pub = self.create_publisher(Twist, "cmd_vel", 10)
+        self.loop_pub = self.create_publisher(ErrorMetric, "/loop_metrics", 10)
 
         self.pose_subscriber = self.create_subscription(Pose,'/turtle1/pose', self.update_pose, 10)
  
         self.pose = Pose()
+
+        self.prevX = 0
+        self.prevY = 0
         
+        self.loopctr = 0
+        self.actual_distance = 0.0
+        self.error = 0.0
+
         # self.frequency = 2000.0 # Debugging tool
         # self.get_logger().info(f"Frequency: {self.frequency}")
         self.timer = self.create_timer(1/self.frequency, self.timer_callback)
@@ -109,55 +122,32 @@ class Waypoint(Node):
 
             else:
 
+                target_angle = math.atan2(self.waypoints[1, self.fctr] - self.pose.y, self.waypoints[0, self.fctr] - self.pose.x)
+
+                anglediff = target_angle - self.pose.theta
+
+                anglediff = math.atan2(math.sin(anglediff), math.cos(anglediff))
+
+                if anglediff > self.angtol:
+
+                    self.ang_vel = 1.0
+
+                elif anglediff < -self.angtol:
+
+                    self.ang_vel = -1.0
+
+                else:
+
+                    self.ang_vel = 0.0
+                    self.following = 2
+
                 if self.following == 1:
 
                     self.velocity = 0.0
                     
-                    target_angle = math.atan2(self.waypoints[1, self.fctr] - self.pose.y, self.waypoints[0, self.fctr] - self.pose.x)
-
-                    anglediff = target_angle - self.pose.theta
-
-                    anglediff = math.atan2(math.sin(anglediff), math.cos(anglediff))
-
-                    if anglediff > self.angtol:
-
-                        self.ang_vel = 1.0
-
-                    elif anglediff < -self.angtol:
-
-                        self.ang_vel = -1.0
-
-                    else:
-
-                        self.ang_vel = 0.0
-                        self.following = 2
-
-                    # self.get_logger().info(f"{target_angle, self.pose.theta}")
-                    # self.get_logger().info("Issuing Command!")
-
                 if self.following == 2:
 
-                    # self.ang_vel = 0.0
-
                     self.velocity = 5.0
-
-                    target_angle = math.atan2(self.waypoints[1, self.fctr] - self.pose.y, self.waypoints[0, self.fctr] - self.pose.x)
-
-                    anglediff = target_angle - self.pose.theta
-
-                    anglediff = math.atan2(math.sin(anglediff), math.cos(anglediff))
-
-                    if anglediff > self.angtol:
-
-                        self.ang_vel = 1.0
-
-                    elif anglediff < -self.angtol:
-
-                        self.ang_vel = -1.0
-
-                    else:
-
-                        self.ang_vel = 0.0
 
                     posdiff = np.linalg.norm(self.waypoints[:,self.fctr] - [self.pose.x, self.pose.y])
 
@@ -171,15 +161,34 @@ class Waypoint(Node):
 
                         self.get_logger().info(f"fctr: {self.fctr}")
 
+                        if self.fctr == 0:
+
+                            self.loopctr = self.loopctr + 1
+
+                            self.error = self.actual_distance - self.waypoint_dist
+
+                            self.actual_distance = 0
+
                         self.fctr = self.fctr + 1
 
                         if self.fctr == self.num_waypoints:
 
                             self.fctr = 0
 
+                            # self.actual_distance = 0
+
                 twist = turtle_twist(self.velocity, self.ang_vel)
-                
+                # self.get_logger().info("Issuing Command!")
                 self.pub.publish(twist)
+
+                self.actual_distance = self.actual_distance + np.linalg.norm([self.prevX - self.pose.x, self.prevY - self.pose.y])
+
+                self.prevX = self.pose.x
+                self.prevY = self.pose.y
+
+                errormsg = loop_info(self.loopctr, self.actual_distance, self.error)
+                self.get_logger().info(f"{errormsg}")
+                self.loop_pub.publish(errormsg)
 
 
         elif self.state == State.APPARATING:
@@ -328,13 +337,15 @@ class Waypoint(Node):
 
             self.following = 1
             self.setpen.call_async(SetPen.Request(r=200, g=200, b=200, width=4, off=False))
-            self.fctr = 1
+            # self.fctr = 1
 
         elif self.state == State.MOVING:
 
             self.state = State.STOPPED
             self.get_logger().info("Stopping")
-            self.fctr = 1
+            twist = turtle_twist(0.0, 0.0)
+            self.pub.publish(twist)
+            # self.fctr = 1
 
         return response
 
@@ -351,13 +362,18 @@ class Waypoint(Node):
         self.waypoints[0,0:self.num_waypoints] = request.x_arr[:]
         self.waypoints[1,0:self.num_waypoints] = request.y_arr[:]
 
-        # Remember original position
-        # self.originalX = self.pose.x # for now
-        # self.originalY = self.pose.y # For now
+        self.loopctr = 0
+        self.actual_distance = 0.0
+        self.error = 0.0
+        errormsg = loop_info(self.loopctr, self.actual_distance, self.error)
+        self.loop_pub.publish(errormsg)
 
         # Start point for following waypoints
         self.originalX = self.waypoints[0,0] # for now
         self.originalY = self.waypoints[1,0] # For now
+
+        self.prevX = self.originalX
+        self.prevY = self.originalY
 
         self.get_logger().info(f"Initial position: {self.originalX, self.originalY}")
 
@@ -369,6 +385,8 @@ class Waypoint(Node):
 
         response.dist += np.linalg.norm(self.waypoints[:,0] - [self.originalX, self.originalY])
         response.dist += np.linalg.norm(self.waypoints[:,self.num_waypoints - 1] - [self.originalX, self.originalY])
+
+        self.waypoint_dist = response.dist
 
         # self.get_logger().info(f"DIST: {self.dist}")
 
