@@ -53,6 +53,10 @@ class Waypoint(Node):
                                ParameterDescriptor(description="Frequency of messages sent"))
         self.frequency = self.get_parameter("frequency").get_parameter_value().double_value
 
+        self.declare_parameter("tolerance", 0.05,
+                               ParameterDescriptor(description="Distance tolerance of motion controller"))
+        self.dtol = self.get_parameter("tolerance").get_parameter_value().double_value
+
         self.originalX = 0
         self.originalY = 0
 
@@ -66,7 +70,7 @@ class Waypoint(Node):
         self.velocity = 10.0
         self.ang_vel = 0.0
         self.fctr = 1
-        self.dtol = 0.05
+        # self.dtol = 0.05
         self.angtol = 0.01
 
         self.waypoints = np.zeros([2,100])

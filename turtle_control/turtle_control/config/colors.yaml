@@ -1,0 +1,5 @@
+drawing_turtle:
+  ros__parameters:
+    background_r: 60
+    background_g: 20
+    background_b: 240

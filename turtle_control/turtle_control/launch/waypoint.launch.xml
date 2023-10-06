@@ -1,0 +1,11 @@
+<launch>
+    <node pkg="turtlesim" exec="turtlesim_node" name="drawing_turtle" >
+        <param from="$(find-pkg-share turtle_control)/colors.yaml"/>
+    </node>
+    <node pkg="turtle_control" exec="waypoint" name="waypoint">
+        <param name="frequency" value="100.0"/>
+        <param name="tolerance" value="0.05"/>
+       
+        <remap from="cmd_vel" to="turtle1/cmd_vel" />
+    </node>
+</launch>
