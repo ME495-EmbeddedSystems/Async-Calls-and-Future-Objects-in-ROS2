@@ -1,0 +1,4 @@
+float64[] x_arr # Array of waypoint x-coordinates
+float64[] y_arr # Array of waypoint y-coordinates
+---
+float64 dist # length traveled by turtle 
