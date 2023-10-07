@@ -37,88 +37,125 @@ def turtle_twist(xdot, omega):
                   angular = Vector3(x = 0.0, y = 0.0, z = omega))
 
 def loop_info(complete_loops, actual_distance, error):
+    """ Create a formatted object for ErrorMetric message type
+
+        Args:
+           complete_loops (int) : number of loops completed by the turtle
+           actual_distance (float) : distance traveled by turtle measured by summing pose feedback
+           error (float) : difference between actual distance traveled by turtle and minmum distances between waypoints of the loop
+
+        Returns:
+           ErrorMessage - an object with 3 values
+    """
 
     return ErrorMetric(complete_loops=complete_loops, actual_distance=actual_distance, error=error)
 
 class Waypoint(Node):
 
+        """TO DO
+        """
+
     def __init__(self):
 
+        """TO DO
+        """
+
+        # Initially the turtle is statioanry
         super().__init__("waypoint")
         self.state = State.STOPPED
 
+        # Callback group for set_pen and teleport services
         self.callback_group = MutuallyExclusiveCallbackGroup()
 
+        # Parametrize timer frequency
         self.declare_parameter("frequency", 100.0,
-                               ParameterDescriptor(description="Frequency of messages sent"))
+                               ParameterDescriptor(description="Frequency of timer service"))
         self.frequency = self.get_parameter("frequency").get_parameter_value().double_value
 
+        # Parametrize distance tolerance
         self.declare_parameter("tolerance", 0.05,
                                ParameterDescriptor(description="Distance tolerance of motion controller"))
         self.dtol = self.get_parameter("tolerance").get_parameter_value().double_value
 
+        # Original position of turtle for resetting
         self.originalX = 0
         self.originalY = 0
 
+        # Commanded position to turtle
         self.newX = 0
         self.newY = 0
 
-        self.drawing = 0
-        self.cross_length = 0.1
-        # self.cross_length = 2
-        self.following = 0
-        self.velocity = 10.0
-        self.ang_vel = 0.0
-        self.fctr = 1
-        # self.dtol = 0.05
-        self.angtol = 0.01
-
-        self.waypoints = np.zeros([2,100])
-        self.num_waypoints = 0
-        self.ctr = 0
-        self.nsteps = 0
-
-        self.pub = self.create_publisher(Twist, "cmd_vel", 10)
-        self.loop_pub = self.create_publisher(ErrorMetric, "/loop_metrics", 10)
-
-        self.pose_subscriber = self.create_subscription(Pose,'/turtle1/pose', self.update_pose, 10)
- 
-        self.pose = Pose()
-
+        # Previous feedback position for distance calculation
         self.prevX = 0
         self.prevY = 0
+
+        # Initialize drawing variables
+        self.drawing = 0 # Sub-state for drawing crosses
+        self.cross_length = 0.1 # Half of length of one cross in meters
+        self.ctr = 0  # Tracker for drawing waypoints
+        self.teleport_future = None # Future object for asynchronous teleport call
+        self.setpen_future = None # Future object for asynchronous setpen call
+        self.skip = False # Tracking object
+
+        # Initialize motion control variables
+        self.following = 0 # Sub-state for motion-controller
+        self.velocity = 10.0 # Forward velocity
+        self.ang_vel = 0.0 # Angular velocity
+        self.fctr = 1 # Loop segment tracker
+        self.angtol = 0.01 # Angular tolerance
+
+        # Initialize waypoint variables
+        self.waypoints = np.zeros([2,100]) # Waypoints list
+        self.num_waypoints = 0 # Number of waypoints
+
+        # Initialize Loop metrics
+        self.loopctr = 0 # Number of completed loops
+        self.actual_distance = 0.0 # Distance traveled by turtle
+        self.error = 0.0 # Error in distance traveled
+        self.errormsg = 0 # ErrorMetric Object
+
+        # Publishers
+
+        # Create Publisher for /cmd_vel topic
+        self.pub = self.create_publisher(Twist, "cmd_vel", 10)
+
+        # Create Publisher for /loop_metrics topic
+        self.loop_pub = self.create_publisher(ErrorMetric, "/loop_metrics", 10)
+
+        # Subscribers
+
+        # Create subscriber for pose feedback
+        self.pose_subscriber = self.create_subscription(Pose,'/turtle1/pose', self.update_pose, 10)
+        self.pose = Pose() # Feedback pose
+
+        # Clients
         
-        self.loopctr = 0
-        self.actual_distance = 0.0
-        self.error = 0.0
-
-        self.errormsg = 0
-
-        # self.frequency = 2000.0 # Debugging tool
-        # self.get_logger().info(f"Frequency: {self.frequency}")
-        self.timer = self.create_timer(1/self.frequency, self.timer_callback)
-
-        self.teleport_future = None
-        self.setpen_future = None
-        self.skip = False
-
-        self.kill_future = 0 
-        self.kill      = self.create_client(Kill, "kill")
-        self.spawn     = self.create_client(Spawn,"spawn")
+        # Create reset client
         self.reset     = self.create_client(Empty, "reset")
+
+        # Create teleport client
         self.teleport = self.create_client(TeleportAbsolute, "turtle1/teleport_absolute", callback_group=self.callback_group)
+        
+        # Create set_pen client
         self.setpen = self.create_client(SetPen, "turtle1/set_pen", callback_group=self.callback_group)
 
-        self.toggle = self.create_service(Empty, "toggle", self.toggle_callback)
-        # self.toggle = self.create_service(Empty, "toggle", self.toggle_callback, self.callback_group)
+        # Services
+        
+        # Create timer service
+        # self.frequency = 2000.0 # Debugging tool
+        self.timer = self.create_timer(1/self.frequency, self.timer_callback)
 
+        # Create toggle service
+        self.toggle = self.create_service(Empty, "toggle", self.toggle_callback)
+
+        # Create load service
         self.load = self.create_service(Waypoints, "load", self.load_callback)
-        # self.load = self.create_service(Waypoints, "load", self.load_callback, self.callback_group)
 
     def timer_callback(self):
 
-        # self.get_logger().info(f"h {self.pose.x}, {self.pose.y}, {self.pose.theta}")
-        
+        """TO DO
+        """
+
         if self.state == State.MOVING:
 
             if self.num_waypoints == 0:
@@ -327,7 +364,7 @@ class Waypoint(Node):
                 
 
     def toggle_callback(self, request, response):
-        """ Callback function for the toggleservice
+        """ Callback function for the toggles service TO DO
 
          Args:
           request (SwitchRequest): the mixer field contains
@@ -397,20 +434,13 @@ class Waypoint(Node):
 
         self.waypoint_dist = response.dist
 
-        # self.get_logger().info(f"DIST: {self.dist}")
-
-        # Select first waypoint
-        # self.newX = self.waypoints[0, 0] - self.cross_length
-        # self.newY = self.waypoints[1, 0] - self.cross_length
-
-        # Lift pen up
-        # self.setpen_future = self.setpen.call_async(SetPen.Request(r=200, g=200, b=200, width=4, off=False))
-
         self.get_logger().info(f"{self.waypoints[:,0:self.num_waypoints]}")
         
         return response
 
     def update_pose(self, data):
+        """TO DO
+        """
 
         self.pose = data
 
