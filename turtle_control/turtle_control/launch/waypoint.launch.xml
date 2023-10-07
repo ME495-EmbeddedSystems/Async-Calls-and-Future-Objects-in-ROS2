@@ -4,7 +4,7 @@
     </node>
     <node pkg="turtle_control" exec="waypoint" name="waypoint">
         <param name="frequency" value="100.0"/>
-        <param name="tolerance" value="0.05"/>
+        <param name="tolerance" value="0.050"/>
        
         <remap from="cmd_vel" to="turtle1/cmd_vel" />
     </node>

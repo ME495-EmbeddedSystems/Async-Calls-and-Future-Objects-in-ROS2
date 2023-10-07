@@ -92,6 +92,8 @@ class Waypoint(Node):
         self.actual_distance = 0.0
         self.error = 0.0
 
+        self.errormsg = 0
+
         # self.frequency = 2000.0 # Debugging tool
         # self.get_logger().info(f"Frequency: {self.frequency}")
         self.timer = self.create_timer(1/self.frequency, self.timer_callback)
@@ -155,7 +157,7 @@ class Waypoint(Node):
 
                     posdiff = np.linalg.norm(self.waypoints[:,self.fctr] - [self.pose.x, self.pose.y])
 
-                    self.get_logger().info(f"{self.waypoints[:,self.fctr], [self.pose.x, self.pose.y]}")
+                    # self.get_logger().info(f"{self.waypoints[:,self.fctr], [self.pose.x, self.pose.y]}")
 
                     if posdiff < self.dtol and posdiff > -self.dtol:
 
@@ -163,13 +165,17 @@ class Waypoint(Node):
 
                         self.following = 1
 
-                        self.get_logger().info(f"fctr: {self.fctr}")
+                        # self.get_logger().info(f"fctr: {self.fctr}")
 
                         if self.fctr == 0:
 
                             self.loopctr = self.loopctr + 1
 
                             self.error = self.actual_distance - self.waypoint_dist
+
+                            self.errormsg = loop_info(self.loopctr, self.actual_distance, self.error)
+
+                            self.loop_pub.publish(self.errormsg)
 
                             self.actual_distance = 0
 
@@ -190,9 +196,8 @@ class Waypoint(Node):
                 self.prevX = self.pose.x
                 self.prevY = self.pose.y
 
-                errormsg = loop_info(self.loopctr, self.actual_distance, self.error)
-                self.get_logger().info(f"{errormsg}")
-                self.loop_pub.publish(errormsg)
+                self.errormsg = loop_info(self.loopctr, self.actual_distance, self.error)
+                # self.get_logger().info(f"{self.errormsg}")
 
 
         elif self.state == State.APPARATING:
@@ -369,8 +374,8 @@ class Waypoint(Node):
         self.loopctr = 0
         self.actual_distance = 0.0
         self.error = 0.0
-        errormsg = loop_info(self.loopctr, self.actual_distance, self.error)
-        self.loop_pub.publish(errormsg)
+        self.errormsg = loop_info(self.loopctr, self.actual_distance, self.error)
+        self.loop_pub.publish(self.errormsg)
 
         # Start point for following waypoints
         self.originalX = self.waypoints[0,0] # for now
