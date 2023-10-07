@@ -1,0 +1,16 @@
+https://stackoverflow.com/questions/25751030/how-to-get-only-process-id-in-specify-process-name-in-linux
+
+https://www.geeksforgeeks.org/awk-command-unixlinux-examples/
+
+https://answers.ros.org/question/365683/ros2-launch-file-error-libexec-directory-does-not-exist/
+
+Collaborated on the assignment with:
+Srikanth Schelbert
+Shail Dalal
+Ananya Agarwal
+Sophia Schiffer
+Leo Chen
+Courtney Smith
+Carter DiOrio
+Allen Liu
+Anuj Natraj 
