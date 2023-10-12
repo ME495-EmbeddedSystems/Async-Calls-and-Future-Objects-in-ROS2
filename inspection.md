@@ -120,7 +120,7 @@ If the nodes launched from the `launchfile` are not running, you will get incorr
    float64 x # the new x position of the new turtle
    float64 y # the new y position of the new
     ```
-
+[Should be ros2 interface proto, which provides a template/prototype. show shows the definition]
 ## Package Exploration
 1. Use the ROS command `ros2 interface package crazy_turtle_interfaces` to list the interface types defined by `crazy_turtle_interfaces`
    The output of the command looks like

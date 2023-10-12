@@ -16,8 +16,8 @@ setup(
     zip_safe=True,
     maintainer='adityanair',
     maintainer_email='aditya.nair0123@gmail.com',
-    description='TODO: Package description',
-    license='TODO: License declaration',
+    description='TODO: Package description', # description inconsistent with package.xml
+    license='TODO: License declaration', # missing license
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

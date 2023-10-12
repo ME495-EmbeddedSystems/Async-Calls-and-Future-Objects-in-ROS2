@@ -3,8 +3,8 @@
 <package format="3">
   <name>turtle_control</name>
   <version>0.0.0</version>
-  <description>Package description for turtle_control</description>
-  <maintainer email="aditya.nair0123@gmail.com">adityanair</maintainer>
+  <description>Package description for turtle_control</description> # missing description
+  <maintainer email="aditya.nair0123@gmail.com">adityanair</maintainer> # missing mainter name
   <license>TODO: License declaration</license>
 
   <exec_depend>rclpy</exec_depend>

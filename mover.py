@@ -4,13 +4,13 @@ Publishes twist that will move a robot back and forth in the x & y direction
 while randomly providing an angular velocity about the z-axis.
 
 PUBLISHERS:
-  + ${topic_name} (${message_type}) - The velocity of an erratic turtle path
+  + ${topic_name} (${message_type}) - The velocity of an erratic turtle path [did not fill in]
 
 SERVICES:
-  + ${topic_name} (${service_type}) - Position of the new turtle
+  + ${topic_name} (${service_type}) - Position of the new turtle [no fill]
 
 PARAMETERS:
-  + ${param_name} (${param_type}) - Velocity driving the robot
+  + ${param_name} (${param_type}) - Velocity driving the robot [no fill]
 
 """
 
