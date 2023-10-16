@@ -1,0 +1,12 @@
+Part I -1
+Part II: -3
+1. README does not show the video inline: 
+2. Directory structure incorrect: should be turtle_control/package.xml and the package contents, not turtle_control/turtle_control/package.xml 
+3. workspace files were included in the git repository: 
+4. Some topics are absolute  e.g., /turtle1/pose
+5. Do not wait for service before creating clients
+6. The ROS api for the node is not documented (e.g., services clients etc)
+7. Load service does not reset the turtle simulator by calling the reset service.
+8. Do not leave extra files that were used for testing or were old versions in the final product (e.g., waypoints2.py) this makes it confusing as to what is current
+Othe comments (no points off):
+The code in the timer callback  would be greatly simplified if you had used async/await.  But it could also be simplified by adding more states to the state machine: this would help systemize and even eliminate the need for what are essentially implicit states such as the logical combinations of if future == None, self.drawing, and self.skip

@@ -131,7 +131,7 @@ class Waypoint(Node):
 
         # Subscribers
 
-        # Create subscriber for pose feedback
+        # Create subscriber for pose feedback (should be remapped not absolute)
         self.pose_subscriber = self.create_subscription(Pose,'/turtle1/pose', self.update_pose, 10)
         self.pose = Pose() # Feedback pose
 
@@ -252,7 +252,7 @@ class Waypoint(Node):
                 # Assign point to teleport to after set_pen responds
                 if self.setpen_future.done():
 
-                    self.get_logger().info(f"Pen worked")
+                    self.get_logger().info(f"Pen worked") # remove debugging code from final product or at least .debug() instead of .info() []
 
                     # Stop when waypoints are all drawn
                     if self.ctr >= self.num_waypoints:
